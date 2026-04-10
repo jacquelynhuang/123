@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>品類造節活動甘特圖｜娛樂非你BOOK</title>
+  <style>
+    :root {
+      --bg: #f7f8fc;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #dbe2ea;
+      --header: #eef3ff;
+      --bar: #4f46e5;
+      --bar2: #7c3aed;
+      --bar3: #0ea5e9;
+      --bar4: #10b981;
+      --bar5: #f59e0b;
+      --bar6: #ef4444;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 32px;
+    }
+
+    .wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 15px;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .info {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .info-box {
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+
+    .info-box .label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .info-box .value {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .gantt-scroll {
+      overflow-x: auto;
+      overflow-y: hidden;
+      cursor: grab;
+      user-select: none;
+      border-radius: 16px;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 #f1f5f9;
+    }
+
+    .gantt-scroll.dragging {
+      cursor: grabbing;
+    }
+
+    .gantt-scroll::-webkit-scrollbar {
+      height: 12px;
+    }
+
+    .gantt-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 999px;
+    }
+
+    .gantt-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
+
+    .gantt {
+      display: grid;
+      grid-template-columns: 260px repeat(12, minmax(110px, 1fr));
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      min-width: 1580px;
+    }
+
+    .cell {
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      position: relative;
+      padding: 8px;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .header-left,
+    .header-day {
+      background: var(--header);
+      font-weight: 700;
+    }
+
+    .task-name {
+      justify-content: flex-start;
+      padding-left: 16px;
+      font-weight: 600;
+      background: #fcfcfd;
+      position: sticky;
+      left: 0;
+      z-index: 2;
+    }
+
+    .header-left {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+    }
+
+    .bar-slot {
+      background-image: linear-gradient(to right, rgba(219,226,234,0.4) 1px, transparent 1px);
+      background-size: 100% 100%;
+    }
+
+    .bar {
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      height: 28px;
+      border-radius: 999px;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+    }
+
+    .c1 { background: var(--bar); }
+    .c2 { background: var(--bar2); }
+    .c3 { background: var(--bar3); }
+    .c4 { background: var(--bar4); }
+    .c5 { background: var(--bar5); }
+    .c6 { background: var(--bar6); }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+    }
+
+    .preview {
+      border: 1px dashed #cbd5e1;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      padding: 20px;
+    }
+
+    .preview-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .preview-box {
+      display: grid;
+      grid-template-columns: 220px repeat(6, 1fr);
+      border: 1px solid #dbe2ea;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .preview-cell {
+      min-height: 48px;
+      border-right: 1px solid #dbe2ea;
+      border-bottom: 1px solid #dbe2ea;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      position: relative;
+      background: #fff;
+      padding: 6px;
+    }
+
+    .preview-head {
+      background: #eef3ff;
+      font-weight: 700;
+    }
+
+    .preview-task {
+      justify-content: flex-start;
+      padding-left: 12px;
+      font-weight: 600;
+      background: #fcfcfd;
+    }
+
+    .mini-bar {
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      height: 22px;
+      border-radius: 999px;
+      background: #6366f1;
+      opacity: 0.9;
+    }
+
+    .note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .tip {
+      margin: 12px 0 16px;
+      font-size: 13px;
+      color: var(--muted);
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    @media (max-width: 1100px) {
+      body { padding: 16px; }
+      .card { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>品類造節活動甘特圖｜娛樂非你BOOK</h1>
+      <div class="subtitle">
+        活動檔期預計為 <strong>7/25 - 7/30</strong>。以下將前置作業與正式上線流程拆解為甘特圖，時間軸由左到右排列，方便追蹤各階段進度。
+      </div>
+
+      <div class="info">
+        <div class="info-box">
+          <div class="label">活動名稱</div>
+          <div class="value">品類造節活動（娛樂非你BOOK）</div>
+        </div>
+        <div class="info-box">
+          <div class="label">活動檔期</div>
+          <div class="value">7/25 - 7/30</div>
+        </div>
+        <div class="info-box">
+          <div class="label">流程節點</div>
+          <div class="value">6 個主要任務</div>
+        </div>
+      </div>
+
+      <div class="tip">可用滑鼠按住時間軸區域左右拖拉，快速查看完整排程。</div>
+      <div class="gantt-scroll" id="ganttScroll">
+      <div class="gantt">
+        <!-- Header -->
+        <div class="cell header-left">任務項目</div>
+        <div class="cell header-day">7/19</div>
+        <div class="cell header-day">7/20</div>
+        <div class="cell header-day">7/21</div>
+        <div class="cell header-day">7/22</div>
+        <div class="cell header-day">7/23</div>
+        <div class="cell header-day">7/24</div>
+        <div class="cell header-day">7/25</div>
+        <div class="cell header-day">7/26</div>
+        <div class="cell header-day">7/27</div>
+        <div class="cell header-day">7/28</div>
+        <div class="cell header-day">7/29</div>
+        <div class="cell header-day">7/30</div>
+
+        <!-- Row 1 -->
+        <div class="cell task-name">活動規劃</div>
+        <div class="cell bar-slot"><div class="bar c1">活動規劃</div></div>
+        <div class="cell bar-slot"><div class="bar c1">活動規劃</div></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+
+        <!-- Row 2 -->
+        <div class="cell task-name">買版規劃</div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"><div class="bar c2">買版規劃</div></div>
+        <div class="cell bar-slot"><div class="bar c2">買版規劃</div></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+
+        <!-- Row 3 -->
+        <div class="cell task-name">發美術工單</div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"><div class="bar c3">發美術工單</div></div>
+        <div class="cell bar-slot"><div class="bar c3">發美術工單</div></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+
+        <!-- Row 4 -->
+        <div class="cell task-name">確認活動頁入稿內容</div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"><div class="bar c4">確認入稿內容</div></div>
+        <div class="cell bar-slot"><div class="bar c4">確認入稿內容</div></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+
+        <!-- Row 5 -->
+        <div class="cell task-name">活動頁設定</div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"><div class="bar c5">活動頁設定</div></div>
+        <div class="cell bar-slot"><div class="bar c5">活動頁設定</div></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+
+        <!-- Row 6 -->
+        <div class="cell task-name">正式上線</div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"></div>
+        <div class="cell bar-slot"><div class="bar c6">上線準備</div></div>
+        <div class="cell bar-slot"><div class="bar c6">正式上線</div></div>
+        <div class="cell bar-slot"><div class="bar c6">執行中</div></div>
+        <div class="cell bar-slot"><div class="bar c6">執行中</div></div>
+        <div class="cell bar-slot"><div class="bar c6">執行中</div></div>
+        <div class="cell bar-slot"><div class="bar c6">執行中</div></div>
+        <div class="cell bar-slot"><div class="bar c6">活動結束</div></div>
+      </div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item"><span class="dot" style="background:#4f46e5"></span> 活動規劃</div>
+        <div class="legend-item"><span class="dot" style="background:#7c3aed"></span> 買版規劃</div>
+        <div class="legend-item"><span class="dot" style="background:#0ea5e9"></span> 發美術工單</div>
+        <div class="legend-item"><span class="dot" style="background:#10b981"></span> 確認入稿內容</div>
+        <div class="legend-item"><span class="dot" style="background:#f59e0b"></span> 活動頁設定</div>
+        <div class="legend-item"><span class="dot" style="background:#ef4444"></span> 正式上線</div>
+      </div>
+    </div>
+
+    <div class="card preview">
+      <div class="preview-title">畫面示意（簡化版）</div>
+      <div class="preview-box">
+        <div class="preview-cell preview-head">任務 / 日期</div>
+        <div class="preview-cell preview-head">7/25</div>
+        <div class="preview-cell preview-head">7/26</div>
+        <div class="preview-cell preview-head">7/27</div>
+        <div class="preview-cell preview-head">7/28</div>
+        <div class="preview-cell preview-head">7/29</div>
+        <div class="preview-cell preview-head">7/30</div>
+
+        <div class="preview-cell preview-task">活動頁設定</div>
+        <div class="preview-cell"><span class="mini-bar"></span></div>
+        <div class="preview-cell"></div>
+        <div class="preview-cell"></div>
+        <div class="preview-cell"></div>
+        <div class="preview-cell"></div>
+        <div class="preview-cell"></div>
+
+        <div class="preview-cell preview-task">正式上線</div>
+        <div class="preview-cell"><span class="mini-bar"></span></div>
+        <div class="preview-cell"><span class="mini-bar"></span></div>
+        <div class="preview-cell"><span class="mini-bar"></span></div>
+        <div class="preview-cell"><span class="mini-bar"></span></div>
+        <div class="preview-cell"><span class="mini-bar"></span></div>
+        <div class="preview-cell"><span class="mini-bar"></span></div>
+      </div>
+      <div class="note">
+        這個示意版本只是讓你快速理解畫面風格；上方完整版才是正式的 HTML 甘特圖內容。<br>
+        若你要，我也可以下一版直接幫你改成：<strong>更像簡報風</strong>、<strong>公司內部提案風</strong>、或 <strong>Shopee 報表風格</strong>。
+      </div>
+    </div>
+  </div>
+  <script>
+    const slider = document.getElementById('ganttScroll');
+    let isDown = false;
+    let startX = 0;
+    let scrollLeft = 0;
+
+    slider.addEventListener('mousedown', (e) => {
+      isDown = true;
+      slider.classList.add('dragging');
+      startX = e.pageX - slider.offsetLeft;
+      scrollLeft = slider.scrollLeft;
+    });
+
+    slider.addEventListener('mouseleave', () => {
+      isDown = false;
+      slider.classList.remove('dragging');
+    });
+
+    slider.addEventListener('mouseup', () => {
+      isDown = false;
+      slider.classList.remove('dragging');
+    });
+
+    slider.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - slider.offsetLeft;
+      const walk = (x - startX) * 1.5;
+      slider.scrollLeft = scrollLeft - walk;
+    });
+  </script>
+</body>
+</html>
